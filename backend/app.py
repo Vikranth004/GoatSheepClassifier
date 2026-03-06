@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 import torch
 import torchvision.transforms as transforms
@@ -7,6 +7,7 @@ import torch.nn.functional as F
 import numpy as np
 import cv2
 import base64
+import os
 
 from utils.gradcam import generate_gradcam
 
@@ -24,9 +25,13 @@ transform = transforms.Compose([
 
 classes = ["Goat", "Sheep"]
 
-@app.route('/')
-def home():
-    return "Goat vs Sheep AI API Running"
+@app.route("/")
+def index():
+    return send_from_directory("../frontend", "index.html")
+
+@app.route("/<path:path>")
+def static_files(path):
+    return send_from_directory("../frontend", path)
 
 @app.route('/predict', methods=['POST'])
 def predict():
@@ -80,4 +85,5 @@ def predict():
     })
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=7860)
+    port = int(os.environ.get("PORT", 7860))
+    app.run(host="0.0.0.0", port=port)
